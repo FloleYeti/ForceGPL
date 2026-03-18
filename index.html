@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>GPL vs Essence</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <style>
+    body {
+      margin: 0;
+      font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+      background: linear-gradient(180deg, #f0f2f5, #e4e7ec);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+    }
+
+    .app {
+      width: 100%;
+      max-width: 380px;
+      padding: 20px;
+    }
+
+    .card {
+      background: rgba(255,255,255,0.85);
+      backdrop-filter: blur(10px);
+      border-radius: 20px;
+      padding: 20px;
+      box-shadow: 0 15px 40px rgba(0,0,0,0.12);
+    }
+
+    h2 {
+      text-align: center;
+      margin-bottom: 20px;
+      font-weight: 600;
+    }
+
+    input {
+      width: 100%;
+      padding: 14px;
+      margin-bottom: 14px;
+      border-radius: 12px;
+      border: 1px solid #ddd;
+      font-size: 16px;
+      text-align: center;
+      background: #f9fafb;
+    }
+
+    input:focus {
+      outline: none;
+      border-color: #7aa7ff;
+      background: white;
+    }
+
+    .result {
+      margin-top: 20px;
+      padding: 16px;
+      border-radius: 14px;
+      text-align: center;
+      font-size: 18px;
+      transition: all 0.25s ease;
+    }
+
+    .ok { background: #e9f9f0; color: #18794e; }
+    .no { background: #fdecec; color: #b42318; }
+
+    .details {
+      font-size: 14px;
+      margin-top: 8px;
+      opacity: 0.8;
+    }
+
+    .postit {
+      margin-top: 15px;
+      background: #fff9c4;
+      padding: 12px;
+      border-radius: 12px;
+      font-size: 13px;
+      text-align: center;
+      box-shadow: inset 0 0 5px rgba(0,0,0,0.05);
+    }
+  </style>
+</head>
+
+<body>
+
+<div class="app">
+  <div class="card">
+
+    <h2>🚗 GPL vs Essence</h2>
+
+    <input type="number" id="prixEssence" placeholder="Prix Essence €/L" step="0.01">
+    <input type="number" id="prixGPL" placeholder="Prix GPL €/L" step="0.01">
+    <input type="number" id="consoEssence" placeholder="Conso Essence L/100km" step="0.1">
+    <input type="number" id="consoGPL" placeholder="Conso GPL L/100km" step="0.1">
+
+    <div id="resultat"></div>
+
+    <div class="postit">
+      🧠 GPL rentable si coût /100km &lt; essence  
+      (+20 à 30% de conso en général)
+    </div>
+
+  </div>
+</div>
+
+<script>
+const inputs = ["prixEssence","prixGPL","consoEssence","consoGPL"];
+let timer;
+
+// Charger sauvegarde
+window.onload = function() {
+  inputs.forEach(id => {
+    let val = localStorage.getItem(id);
+    if (val) document.getElementById(id).value = val;
+  });
+  calculer();
+};
+
+// Auto calcul avec délai (debounce)
+inputs.forEach(id => {
+  document.getElementById(id).addEventListener("input", () => {
+    clearTimeout(timer);
+    timer = setTimeout(calculer, 300);
+  });
+});
+
+function calculer() {
+  let prixE = Number(prixEssence.value);
+  let prixG = Number(prixGPL.value);
+  let consoE = Number(consoEssence.value);
+  let consoG = Number(consoGPL.value);
+
+  if (!prixE || !prixG || !consoE || !consoG) {
+    document.getElementById("resultat").innerHTML = "";
+    return;
+  }
+
+  // sauvegarde
+  localStorage.setItem("prixEssence", prixE);
+  localStorage.setItem("prixGPL", prixG);
+  localStorage.setItem("consoEssence", consoE);
+  localStorage.setItem("consoGPL", consoG);
+
+  let coutE = prixE * consoE;
+  let coutG = prixG * consoG;
+
+  let rentable = coutG < coutE;
+
+  document.getElementById("resultat").innerHTML = `
+    <div class="result ${rentable ? 'ok' : 'no'}">
+      ${rentable ? '✅ GPL rentable' : '❌ GPL non rentable'}
+      <div class="details">
+        ${coutE.toFixed(2)} €/100km (essence)<br>
+        ${coutG.toFixed(2)} €/100km (GPL)
+      </div>
+    </div>
+  `;
+}
+</script>
+
+</body>
+</html>
